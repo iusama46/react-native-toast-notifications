@@ -40,31 +40,41 @@ class ToastContainer extends Component<Props, State> {
   /**
    * Shows a new toast. Returns id
    */
-  show = (message: string | JSX.Element, toastOptions?: ToastOptions) => {
-    let id = toastOptions?.id || Math.random().toString();
-    const onDestroy = () => {
-      toastOptions?.onClose && toastOptions?.onClose();
-      this.setState({ toasts: this.state.toasts.filter((t) => t.id !== id) });
-    };
+ show = (message: string | JSX.Element, toastOptions?: ToastOptions) => {
+    const id = "constant-id"; // Use a constant ID
 
-    requestAnimationFrame(() => {
-      this.setState({
-        toasts: [
-          {
-            id,
-            onDestroy,
-            message,
-            open: true,
-            onHide: () => this.hide(id),
-            ...this.props,
-            ...toastOptions,
-          },
-          ...this.state.toasts.filter((t) => t.open),
-        ],
+    // Check if a toast with the constant ID already exists
+    const existingToast = this.state.toasts.find((t) => t.id === id);
+
+    // If it exists, update the existing toast
+    if (existingToast) {
+      this.update(id, message, toastOptions);
+    } else {
+      // Otherwise, create a new toast
+      const onDestroy = () => {
+        toastOptions?.onClose && toastOptions?.onClose();
+        this.setState({ toasts: this.state.toasts.filter((t) => t.id !== id) });
+      };
+
+      requestAnimationFrame(() => {
+        this.setState({
+          toasts: [
+            {
+              id,
+              onDestroy,
+              message,
+              open: true,
+              onHide: () => this.hide(id),
+              ...this.props,
+              ...toastOptions,
+            },
+            ...this.state.toasts.filter((t) => t.open),
+          ],
+        });
       });
-    });
+    }
 
-    return id;
+    return id; // Return the ID of the toast
   };
 
   /**
